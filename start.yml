@@ -1,0 +1,28 @@
+---
+- hosts: loadbalancers
+  tasks:
+
+     - name: make sure docker-py is available
+       pip:
+         name: docker-py
+       become: true
+
+     - name: deploy newest haproxy config files
+       copy:
+         src: files/haproxy
+         dest: /tmp
+         owner: root
+         group: root
+         force: yes
+       become: true
+
+     - name: pull newest haproxy image
+       docker_container: 
+         image: haproxy:alpine
+         name: haproxy
+         state: started
+         pull: true
+         volumes:
+           - /tmp/haproxy:/usr/local/etc/haproxy:ro
+         published_ports:
+           - 8081:80
